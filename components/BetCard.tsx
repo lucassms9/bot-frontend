@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 interface Props {
   bet: Bet;
-  onMarkResult?: (betId: string, result: 'won' | 'lost', stake: number) => Promise<void>;
+  onMarkResult?: (betId: string, result: 'won' | 'lost', finalValue: number) => Promise<void>;
 }
 
 const riskColors: Record<string, string> = {
@@ -19,7 +19,7 @@ const riskColors: Record<string, string> = {
 export default function BetCard({ bet, onMarkResult }: Props) {
   const [showStakeModal, setShowStakeModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState<'won' | 'lost' | null>(null);
-  const [stakeAmount, setStakeAmount] = useState(bet.suggestedStake?.toFixed(2) || '');
+  const [finalValue, setFinalValue] = useState('');
   const [loading, setLoading] = useState(false);
 
   const colorClass = riskColors[bet.summary.riskCategory] || 'bg-zinc-800 text-zinc-300 border-zinc-700';
@@ -33,15 +33,15 @@ export default function BetCard({ bet, onMarkResult }: Props) {
   const handleConfirmResult = async () => {
     if (!selectedResult || !onMarkResult) return;
 
-    const stake = parseFloat(stakeAmount);
-    if (isNaN(stake) || stake <= 0) {
+    const value = parseFloat(finalValue);
+    if (isNaN(value) || value <= 0) {
       alert('Digite um valor válido');
       return;
     }
 
     setLoading(true);
     try {
-      await onMarkResult(bet.id, selectedResult, stake);
+      await onMarkResult(bet.id, selectedResult, value);
       setShowStakeModal(false);
     } catch (error) {
       alert('Erro ao marcar resultado');
@@ -219,23 +219,28 @@ export default function BetCard({ bet, onMarkResult }: Props) {
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-zinc-400 mb-2">
-                Valor Apostado (R$)
+                {selectedResult === 'won' ? 'Lucro Final (R$)' : 'Prejuízo Final (R$)'}
               </label>
               <input
                 type="number"
                 step="0.01"
-                value={stakeAmount}
-                onChange={(e) => setStakeAmount(e.target.value)}
+                value={finalValue}
+                onChange={(e) => setFinalValue(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="100.00"
+                placeholder={selectedResult === 'won' ? '205.50' : '100.00'}
                 disabled={loading}
               />
+              <p className="text-xs text-zinc-500 mt-2">
+                {selectedResult === 'won' 
+                  ? '💡 Digite o valor que você ganhou (lucro líquido)'
+                  : '💡 Digite o valor que você perdeu (prejuízo total)'}
+              </p>
             </div>
 
             {selectedResult === 'won' && (
               <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                 <p className="text-sm text-green-400">
-                  Lucro estimado: <strong>R$ {(parseFloat(stakeAmount || '0') * (bet.summary.oddTotal - 1)).toFixed(2)}</strong>
+                  ✅ Será adicionado: <strong>R$ {parseFloat(finalValue || '0').toFixed(2)}</strong> à banca
                 </p>
               </div>
             )}
@@ -243,7 +248,7 @@ export default function BetCard({ bet, onMarkResult }: Props) {
             {selectedResult === 'lost' && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <p className="text-sm text-red-400">
-                  Prejuízo: <strong>R$ {parseFloat(stakeAmount || '0').toFixed(2)}</strong>
+                  ❌ Será subtraído: <strong>R$ {parseFloat(finalValue || '0').toFixed(2)}</strong> da banca
                 </p>
               </div>
             )}

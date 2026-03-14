@@ -130,5 +130,5 @@ export interface CreateBankrollDto {
 
 export interface MarkBetResultDto {
   result: 'won' | 'lost';
-  stake: number;
+  finalValue: number;
 }

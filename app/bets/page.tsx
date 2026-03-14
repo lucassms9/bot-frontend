@@ -55,9 +55,9 @@ export default function BetsPage() {
     }
   };
 
-  const handleMarkBetResult = async (betId: string, result: 'won' | 'lost', stake: number) => {
+  const handleMarkBetResult = async (betId: string, result: 'won' | 'lost', finalValue: number) => {
     try {
-      await markBetResult(betId, { result, stake });
+      await markBetResult(betId, { result, finalValue });
       await fetchData(); // Reload data to update bet status and bankroll
     } catch (error) {
       throw error;
