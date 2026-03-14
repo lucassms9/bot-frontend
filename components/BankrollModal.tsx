@@ -46,7 +46,7 @@ export default function BankrollModal({
     try {
       await onSave(numBalance, currency, numStakePercentage);
       onClose();
-    } catch (error) {
+    } catch {
       alert('Erro ao salvar banca');
     } finally {
       setLoading(false);

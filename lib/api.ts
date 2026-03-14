@@ -2,6 +2,21 @@ import { OpportunitiesResponse, BetsResponse, StatsResponse, BankrollResponse, C
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+// Helper function to get auth headers
+function getAuthHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 export async function getOpportunities(status?: string): Promise<OpportunitiesResponse> {
   const url = status 
     ? `${API_BASE_URL}/api/opportunities?status=${status}`
@@ -25,6 +40,7 @@ export async function getBets(status?: string): Promise<BetsResponse> {
   
   const response = await fetch(url, {
     cache: 'no-store',
+    headers: getAuthHeaders(),
   });
   
   if (!response.ok) {
@@ -37,6 +53,7 @@ export async function getBets(status?: string): Promise<BetsResponse> {
 export async function getStats(): Promise<StatsResponse> {
   const response = await fetch(`${API_BASE_URL}/api/stats`, {
     cache: 'no-store',
+    headers: getAuthHeaders(),
   });
   
   if (!response.ok) {
@@ -65,6 +82,7 @@ export async function getTopOpportunities(limit = 10): Promise<OpportunitiesResp
 export async function getBankroll(): Promise<BankrollResponse> {
   const response = await fetch(`${API_BASE_URL}/api/bankroll`, {
     cache: 'no-store',
+    headers: getAuthHeaders(),
   });
   
   if (!response.ok) {
@@ -77,9 +95,7 @@ export async function getBankroll(): Promise<BankrollResponse> {
 export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<BankrollResponse> {
   const response = await fetch(`${API_BASE_URL}/api/bankroll`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   
@@ -93,9 +109,7 @@ export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<B
 export async function markBetResult(betId: string, data: MarkBetResultDto): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/api/bets/${betId}/result`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   

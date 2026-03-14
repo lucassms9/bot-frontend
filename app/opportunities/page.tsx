@@ -5,6 +5,7 @@ import { getOpportunities, getStats } from '@/lib/api';
 import { Opportunity, Stats } from '@/types';
 import OpportunityCard from '@/components/OpportunityCard';
 import StatsCard from '@/components/StatsCard';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function OpportunitiesPage() {
@@ -39,31 +40,36 @@ export default function OpportunitiesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <ArrowPathIcon className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Carregando oportunidades...</p>
+      <ProtectedRoute>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <ArrowPathIcon className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Carregando oportunidades...</p>
+          </div>
         </div>
-      </div>
+      </ProtectedRoute>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <p className="text-red-800 mb-4">{error}</p>
-        <button
-          onClick={fetchData}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-        >
-          Tentar Novamente
-        </button>
-      </div>
+      <ProtectedRoute>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-800 mb-4">{error}</p>
+          <button
+            onClick={fetchData}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div>
+    <ProtectedRoute>
+      <div>
       {/* Stats */}
       {stats && <StatsCard stats={stats} />}
 
@@ -99,6 +105,7 @@ export default function OpportunitiesPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

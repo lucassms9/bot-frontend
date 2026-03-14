@@ -7,6 +7,7 @@ import BetCard from '@/components/BetCard';
 import StatsCard from '@/components/StatsCard';
 import BankrollCard from '@/components/BankrollCard';
 import BankrollModal from '@/components/BankrollModal';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function BetsPage() {
@@ -94,23 +95,24 @@ export default function BetsPage() {
   }
 
   return (
-    <div>
-      {/* Bankroll Card */}
-      <div className="mb-6">
-        {bankroll ? (
-          <BankrollCard bankroll={bankroll} onEdit={() => setShowBankrollModal(true)} />
-        ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
-            <p className="text-zinc-400 mb-4">💰 Configure sua banca para receber sugestões de stake</p>
-            <button
-              onClick={() => setShowBankrollModal(true)}
-              className="bg-green-600 text-zinc-100 px-6 py-2 rounded-lg hover:bg-green-500 transition-colors font-medium shadow-[0_0_15px_rgba(34,197,94,0.2)]"
-            >
-              Configurar Banca
-            </button>
-          </div>
-        )}
-      </div>
+    <ProtectedRoute>
+      <div>
+        {/* Bankroll Card */}
+        <div className="mb-6">
+          {bankroll ? (
+            <BankrollCard bankroll={bankroll} onEdit={() => setShowBankrollModal(true)} />
+          ) : (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
+              <p className="text-zinc-400 mb-4">💰 Configure sua banca para receber sugestões de stake</p>
+              <button
+                onClick={() => setShowBankrollModal(true)}
+                className="bg-green-600 text-zinc-100 px-6 py-2 rounded-lg hover:bg-green-500 transition-colors font-medium shadow-[0_0_15px_rgba(34,197,94,0.2)]"
+              >
+                Configurar Banca
+              </button>
+            </div>
+          )}
+        </div>
 
       {/* Stats */}
       {stats && <StatsCard stats={stats} />}
@@ -177,6 +179,7 @@ export default function BetsPage() {
         currentCurrency={bankroll?.currency || 'BRL'}
         currentStakePercentage={bankroll?.stakePercentage || 10}
       />
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

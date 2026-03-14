@@ -43,7 +43,7 @@ export default function BetCard({ bet, onMarkResult }: Props) {
     try {
       await onMarkResult(bet.id, selectedResult, value);
       setShowStakeModal(false);
-    } catch (error) {
+    } catch {
       alert('Erro ao marcar resultado');
     } finally {
       setLoading(false);
