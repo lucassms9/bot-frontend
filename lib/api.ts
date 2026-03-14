@@ -1,4 +1,4 @@
-import { OpportunitiesResponse, BetsResponse, StatsResponse } from '@/types';
+import { OpportunitiesResponse, BetsResponse, StatsResponse, BankrollResponse, CreateBankrollDto, MarkBetResultDto } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -56,6 +56,51 @@ export async function getTopOpportunities(limit = 10): Promise<OpportunitiesResp
   
   if (!response.ok) {
     throw new Error('Failed to fetch top opportunities');
+  }
+  
+  return response.json();
+}
+
+// Bankroll API functions
+export async function getBankroll(): Promise<BankrollResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/bankroll`, {
+    cache: 'no-store',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch bankroll');
+  }
+  
+  return response.json();
+}
+
+export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<BankrollResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/bankroll`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to create/update bankroll');
+  }
+  
+  return response.json();
+}
+
+export async function markBetResult(betId: string, data: MarkBetResultDto): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/bets/${betId}/result`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to mark bet result');
   }
   
   return response.json();

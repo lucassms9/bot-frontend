@@ -66,6 +66,8 @@ export interface Bet {
     status: string;
     profit: number | null;
   };
+  stake?: number;
+  suggestedStake?: number;
   createdAt: string;
   createdAtFormatted: string;
 }
@@ -99,4 +101,34 @@ export interface StatsResponse {
   success: boolean;
   stats: Stats;
   timestamp: string;
+}
+
+// Bankroll types
+export interface Bankroll {
+  id: string;
+  currentBalance: number;
+  initialBalance: number;
+  currency: string;
+  stakePercentage: number;
+  profit: number;
+  profitPercentage: string;
+  suggestedStake: number;
+  updatedAt: string;
+}
+
+export interface BankrollResponse {
+  success: boolean;
+  bankroll: Bankroll;
+  timestamp: string;
+}
+
+export interface CreateBankrollDto {
+  initial_balance: number;
+  currency?: string;
+  stake_percentage?: number;
+}
+
+export interface MarkBetResultDto {
+  result: 'won' | 'lost';
+  stake: number;
 }

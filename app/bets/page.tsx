@@ -1,31 +1,39 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getBets, getStats } from '@/lib/api';
-import { Bet, Stats } from '@/types';
+import { getBets, getStats, getBankroll, createOrUpdateBankroll, markBetResult } from '@/lib/api';
+import { Bet, Stats, Bankroll } from '@/types';
 import BetCard from '@/components/BetCard';
 import StatsCard from '@/components/StatsCard';
+import BankrollCard from '@/components/BankrollCard';
+import BankrollModal from '@/components/BankrollModal';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function BetsPage() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [bankroll, setBankroll] = useState<Bankroll | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [showBankrollModal, setShowBankrollModal] = useState(false);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const [betsData, statsData] = await Promise.all([
+      const [betsData, statsData, bankrollData] = await Promise.all([
         getBets(),
         getStats(),
+        getBankroll().catch(() => ({ success: false, bankroll: null })),
       ]);
 
       setBets(betsData.bets);
       setStats(statsData.stats);
+      if (bankrollData.success && bankrollData.bankroll) {
+        setBankroll(bankrollData.bankroll);
+      }
     } catch (err) {
       setError('Erro ao carregar apostas. Verifique se a API está rodando.');
       console.error(err);
@@ -37,6 +45,24 @@ export default function BetsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleSaveBankroll = async (balance: number, currency: string, stakePercentage: number) => {
+    try {
+      await createOrUpdateBankroll({ initial_balance: balance, currency, stake_percentage: stakePercentage });
+      await fetchData(); // Reload data
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleMarkBetResult = async (betId: string, result: 'won' | 'lost', stake: number) => {
+    try {
+      await markBetResult(betId, { result, stake });
+      await fetchData(); // Reload data to update bet status and bankroll
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const filteredBets = filter === 'all' 
     ? bets 
@@ -69,6 +95,23 @@ export default function BetsPage() {
 
   return (
     <div>
+      {/* Bankroll Card */}
+      <div className="mb-6">
+        {bankroll ? (
+          <BankrollCard bankroll={bankroll} onEdit={() => setShowBankrollModal(true)} />
+        ) : (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
+            <p className="text-zinc-400 mb-4">💰 Configure sua banca para receber sugestões de stake</p>
+            <button
+              onClick={() => setShowBankrollModal(true)}
+              className="bg-green-600 text-zinc-100 px-6 py-2 rounded-lg hover:bg-green-500 transition-colors font-medium shadow-[0_0_15px_rgba(34,197,94,0.2)]"
+            >
+              Configurar Banca
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Stats */}
       {stats && <StatsCard stats={stats} />}
 
@@ -116,10 +159,24 @@ export default function BetsPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredBets.map((bet) => (
-            <BetCard key={bet.id} bet={bet} />
+            <BetCard 
+              key={bet.id} 
+              bet={bet} 
+              onMarkResult={handleMarkBetResult}
+            />
           ))}
         </div>
       )}
+
+      {/* Bankroll Modal */}
+      <BankrollModal
+        isOpen={showBankrollModal}
+        onClose={() => setShowBankrollModal(false)}
+        onSave={handleSaveBankroll}
+        currentBalance={bankroll?.currentBalance || 0}
+        currentCurrency={bankroll?.currency || 'BRL'}
+        currentStakePercentage={bankroll?.stakePercentage || 10}
+      />
     </div>
   );
 }
