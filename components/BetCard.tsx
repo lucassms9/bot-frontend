@@ -74,11 +74,28 @@ export default function BetCard({ bet, onMarkResult }: Props) {
 
         {/* Suggested Stake */}
         {bet.suggestedStake && isPending && (
-          <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <div className="mb-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-yellow-300">💡 Stake sugerido (10%)</span>
-              <span className="text-lg font-bold text-yellow-400">
-                R$ {bet.suggestedStake.toFixed(2)}
+              <div>
+                <span className="text-xs text-yellow-300/80 block mb-1">Stake Sugerido</span>
+                <span className="text-sm text-yellow-300 font-medium">💡 Baseado no seu bankroll</span>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-yellow-400">
+                  R$ {bet.suggestedStake.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actual Stake (if bet was placed) */}
+        {bet.stake && !isPending && (
+          <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-blue-300">💰 Valor Apostado</span>
+              <span className="text-lg font-bold text-blue-400">
+                R$ {bet.stake.toFixed(2)}
               </span>
             </div>
           </div>
@@ -106,7 +123,12 @@ export default function BetCard({ bet, onMarkResult }: Props) {
 
         {/* Game 1 */}
         <div className="mb-3 p-3 bg-zinc-950/50 rounded-lg border border-zinc-800/50">
-          <div className="text-xs font-semibold text-green-500 mb-2">JOGO 1</div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="text-xs font-semibold text-green-500">JOGO 1</div>
+            <div className="text-xs bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400">
+              {bet.game1.match.league}
+            </div>
+          </div>
           <div className="text-sm font-semibold text-zinc-100 mb-1">
             {bet.game1.match.homeTeam} <span className="text-zinc-500">vs</span> {bet.game1.match.awayTeam}
           </div>
@@ -129,7 +151,12 @@ export default function BetCard({ bet, onMarkResult }: Props) {
 
         {/* Game 2 */}
         <div className="mb-3 p-3 bg-zinc-950/50 rounded-lg border border-zinc-800/50">
-          <div className="text-xs font-semibold text-emerald-500 mb-2">JOGO 2</div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="text-xs font-semibold text-emerald-500">JOGO 2</div>
+            <div className="text-xs bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400">
+              {bet.game2.match.league}
+            </div>
+          </div>
           <div className="text-sm font-semibold text-zinc-100 mb-1">
             {bet.game2.match.homeTeam} <span className="text-zinc-500">vs</span> {bet.game2.match.awayTeam}
           </div>

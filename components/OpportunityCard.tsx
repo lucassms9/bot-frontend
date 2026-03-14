@@ -30,6 +30,13 @@ export default function OpportunityCard({ opportunity }: Props) {
         </div>
       </div>
 
+      {/* Liga */}
+      <div className="mb-2">
+        <div className="text-xs bg-gray-100 px-2 py-1 rounded inline-block text-gray-600">
+          {opportunity.match.league}
+        </div>
+      </div>
+
       {/* Jogo */}
       <div className="mb-3">
         <div className="text-sm font-semibold text-gray-900 mb-1">
