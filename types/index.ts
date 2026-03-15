@@ -91,6 +91,7 @@ export interface Stats {
     pending: number;
     won: number;
     lost: number;
+    void: number;
     winRate: number;
     averageOdd: number;
     totalProfit: number;
@@ -129,6 +130,6 @@ export interface CreateBankrollDto {
 }
 
 export interface MarkBetResultDto {
-  result: 'won' | 'lost';
+  result: 'won' | 'lost' | 'void';
   finalValue: number;
 }

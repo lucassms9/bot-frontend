@@ -17,6 +17,25 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
+// Helper function to handle 401 errors globally
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    // Unauthorized - clear auth and redirect to login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    throw new Error('Unauthorized - redirecting to login');
+  }
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function getOpportunities(status?: string): Promise<OpportunitiesResponse> {
   const url = status 
     ? `${API_BASE_URL}/api/opportunities?status=${status}`
@@ -26,11 +45,7 @@ export async function getOpportunities(status?: string): Promise<OpportunitiesRe
     cache: 'no-store',
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch opportunities');
-  }
-  
-  return response.json();
+  return handleResponse<OpportunitiesResponse>(response);
 }
 
 export async function getBets(status?: string): Promise<BetsResponse> {
@@ -43,11 +58,7 @@ export async function getBets(status?: string): Promise<BetsResponse> {
     headers: getAuthHeaders(),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch bets');
-  }
-  
-  return response.json();
+  return handleResponse<BetsResponse>(response);
 }
 
 export async function getStats(): Promise<StatsResponse> {
@@ -56,11 +67,7 @@ export async function getStats(): Promise<StatsResponse> {
     headers: getAuthHeaders(),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch stats');
-  }
-  
-  return response.json();
+  return handleResponse<StatsResponse>(response);
 }
 
 export async function getTopOpportunities(limit = 10): Promise<OpportunitiesResponse> {
@@ -71,11 +78,7 @@ export async function getTopOpportunities(limit = 10): Promise<OpportunitiesResp
     }
   );
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch top opportunities');
-  }
-  
-  return response.json();
+  return handleResponse<OpportunitiesResponse>(response);
 }
 
 // Bankroll API functions
@@ -85,11 +88,7 @@ export async function getBankroll(): Promise<BankrollResponse> {
     headers: getAuthHeaders(),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch bankroll');
-  }
-  
-  return response.json();
+  return handleResponse<BankrollResponse>(response);
 }
 
 export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<BankrollResponse> {
@@ -99,11 +98,7 @@ export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<B
     body: JSON.stringify(data),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to create/update bankroll');
-  }
-  
-  return response.json();
+  return handleResponse<BankrollResponse>(response);
 }
 
 export async function markBetResult(betId: string, data: MarkBetResultDto): Promise<any> {
@@ -113,9 +108,5 @@ export async function markBetResult(betId: string, data: MarkBetResultDto): Prom
     body: JSON.stringify(data),
   });
   
-  if (!response.ok) {
-    throw new Error('Failed to mark bet result');
-  }
-  
-  return response.json();
+  return handleResponse<any>(response);
 }

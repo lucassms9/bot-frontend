@@ -18,9 +18,38 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
+interface SignupResponse {
+  user: User;
+  session: {
+    access_token: string;
+  };
+}
+
+interface LoginResponse {
+  user: User;
+  access_token: string;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Helper to handle 401 errors in auth requests
+async function handleAuthResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    // For auth endpoints, 401 means invalid credentials, not session expiry
+    const data = await response.json();
+    throw new Error(data.message || 'Email ou senha incorretos');
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || `Request failed with status ${response.status}`);
+  }
+
+  return data;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -48,11 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Erro ao cadastrar');
-      }
+      const data = await handleAuthResponse<SignupResponse>(res);
 
       // Após signup bem-sucedido, fazer login automaticamente
       if (data.session?.access_token) {
@@ -76,11 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Email ou senha incorretos');
-      }
+      const data = await handleAuthResponse<LoginResponse>(res);
 
       setToken(data.access_token);
       setUser(data.user);

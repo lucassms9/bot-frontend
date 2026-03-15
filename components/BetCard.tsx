@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 interface Props {
   bet: Bet;
-  onMarkResult?: (betId: string, result: 'won' | 'lost', finalValue: number) => Promise<void>;
+  onMarkResult?: (betId: string, result: 'won' | 'lost' | 'void', finalValue: number) => Promise<void>;
 }
 
 const riskColors: Record<string, string> = {
@@ -18,16 +18,20 @@ const riskColors: Record<string, string> = {
 
 export default function BetCard({ bet, onMarkResult }: Props) {
   const [showStakeModal, setShowStakeModal] = useState(false);
-  const [selectedResult, setSelectedResult] = useState<'won' | 'lost' | null>(null);
+  const [selectedResult, setSelectedResult] = useState<'won' | 'lost' | 'void' | null>(null);
   const [finalValue, setFinalValue] = useState('');
   const [loading, setLoading] = useState(false);
 
   const colorClass = riskColors[bet.summary.riskCategory] || 'bg-zinc-800 text-zinc-300 border-zinc-700';
   const isPending = bet.status === 'pending';
 
-  const handleResultClick = (result: 'won' | 'lost') => {
+  const handleResultClick = (result: 'won' | 'lost' | 'void') => {
     setSelectedResult(result);
     setShowStakeModal(true);
+    // Pre-fill with suggested stake for void
+    if (result === 'void' && bet.suggestedStake) {
+      setFinalValue(bet.suggestedStake.toFixed(2));
+    }
   };
 
   const handleConfirmResult = async () => {
@@ -176,17 +180,24 @@ export default function BetCard({ bet, onMarkResult }: Props) {
 
         {/* Action Buttons */}
         {isPending && onMarkResult && (
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             <button
               onClick={() => handleResultClick('won')}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5"
             >
               <span className="text-lg">🟢</span>
               <span>GREEN</span>
             </button>
             <button
+              onClick={() => handleResultClick('void')}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span className="text-lg">🔵</span>
+              <span>VOID</span>
+            </button>
+            <button
               onClick={() => handleResultClick('lost')}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5"
             >
               <span className="text-lg">🔴</span>
               <span>RED</span>
@@ -214,12 +225,16 @@ export default function BetCard({ bet, onMarkResult }: Props) {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-sm w-full p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-white mb-4">
-              {selectedResult === 'won' ? '🟢 Marcar como GREEN' : '🔴 Marcar como RED'}
+              {selectedResult === 'won' ? '🟢 Marcar como GREEN' : 
+               selectedResult === 'void' ? '🔵 Marcar como VOID' : 
+               '🔴 Marcar como RED'}
             </h3>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-zinc-400 mb-2">
-                {selectedResult === 'won' ? 'Lucro Final (R$)' : 'Prejuízo Final (R$)'}
+                {selectedResult === 'won' ? 'Lucro Final (R$)' : 
+                 selectedResult === 'void' ? 'Stake Retornado (R$)' :
+                 'Prejuízo Final (R$)'}
               </label>
               <input
                 type="number"
@@ -227,12 +242,14 @@ export default function BetCard({ bet, onMarkResult }: Props) {
                 value={finalValue}
                 onChange={(e) => setFinalValue(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder={selectedResult === 'won' ? '205.50' : '100.00'}
+                placeholder={selectedResult === 'won' ? '205.50' : selectedResult === 'void' ? bet.suggestedStake?.toFixed(2) || '100.00' : '100.00'}
                 disabled={loading}
               />
               <p className="text-xs text-zinc-500 mt-2">
                 {selectedResult === 'won' 
                   ? '💡 Digite o valor que você ganhou (lucro líquido)'
+                  : selectedResult === 'void'
+                  ? '💡 Digite o valor da stake que será devolvida à banca'
                   : '💡 Digite o valor que você perdeu (prejuízo total)'}
               </p>
             </div>
@@ -241,6 +258,17 @@ export default function BetCard({ bet, onMarkResult }: Props) {
               <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                 <p className="text-sm text-green-400">
                   ✅ Será adicionado: <strong>R$ {parseFloat(finalValue || '0').toFixed(2)}</strong> à banca
+                </p>
+              </div>
+            )}
+
+            {selectedResult === 'void' && (
+              <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-sm text-blue-400">
+                  🔄 Será retornado: <strong>R$ {parseFloat(finalValue || '0').toFixed(2)}</strong> à banca
+                </p>
+                <p className="text-xs text-blue-300 mt-1">
+                  Aposta cancelada/void - sem lucro nem prejuízo
                 </p>
               </div>
             )}
@@ -266,6 +294,8 @@ export default function BetCard({ bet, onMarkResult }: Props) {
                 className={`flex-1 px-4 py-3 text-white rounded-lg font-medium transition-colors disabled:opacity-50 ${
                   selectedResult === 'won' 
                     ? 'bg-green-600 hover:bg-green-700' 
+                    : selectedResult === 'void'
+                    ? 'bg-blue-600 hover:bg-blue-700'
                     : 'bg-red-600 hover:bg-red-700'
                 }`}
                 disabled={loading}

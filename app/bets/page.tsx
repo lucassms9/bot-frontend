@@ -16,7 +16,8 @@ export default function BetsPage() {
   const [bankroll, setBankroll] = useState<Bankroll | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>('pending'); // Default to pending only
+  const [sortBy, setSortBy] = useState<string>('date'); // Default sort by date
   const [showBankrollModal, setShowBankrollModal] = useState(false);
 
   const fetchData = async () => {
@@ -56,7 +57,7 @@ export default function BetsPage() {
     }
   };
 
-  const handleMarkBetResult = async (betId: string, result: 'won' | 'lost', finalValue: number) => {
+  const handleMarkBetResult = async (betId: string, result: 'won' | 'lost' | 'void', finalValue: number) => {
     try {
       await markBetResult(betId, { result, finalValue });
       await fetchData(); // Reload data to update bet status and bankroll
@@ -65,9 +66,35 @@ export default function BetsPage() {
     }
   };
 
-  const filteredBets = filter === 'all' 
-    ? bets 
-    : bets.filter(bet => bet.status === filter);
+  // Apply filter and sort
+  const processedBets = () => {
+    // First, filter by status
+    let result = filter === 'all' ? bets : bets.filter(bet => bet.status === filter);
+
+    // Then, sort
+    switch (sortBy) {
+      case 'odd-high':
+        result = [...result].sort((a, b) => b.summary.oddTotal - a.summary.oddTotal);
+        break;
+      case 'odd-low':
+        result = [...result].sort((a, b) => a.summary.oddTotal - b.summary.oddTotal);
+        break;
+      case 'risk-high':
+        result = [...result].sort((a, b) => b.summary.riskTotal - a.summary.riskTotal);
+        break;
+      case 'risk-low':
+        result = [...result].sort((a, b) => a.summary.riskTotal - b.summary.riskTotal);
+        break;
+      case 'date':
+      default:
+        // Already sorted by date from API
+        break;
+    }
+
+    return result;
+  };
+
+  const filteredBets = processedBets();
 
   if (loading) {
     return (
@@ -126,17 +153,31 @@ export default function BetsPage() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          {/* Filtro */}
+        <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+          {/* Filtro de Status */}
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="flex-1 sm:flex-none border border-zinc-800 rounded-lg px-3 py-2 bg-zinc-900 text-zinc-100 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="flex-1 sm:flex-none border border-zinc-800 rounded-lg px-3 py-2 bg-zinc-900 text-zinc-100 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none min-w-[140px]"
           >
-            <option value="all">Todas</option>
             <option value="pending">Pendentes</option>
+            <option value="all">Todas</option>
             <option value="won">Vencidas</option>
             <option value="lost">Perdidas</option>
+            <option value="void">Anuladas</option>
+          </select>
+
+          {/* Ordenação */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="flex-1 sm:flex-none border border-zinc-800 rounded-lg px-3 py-2 bg-zinc-900 text-zinc-100 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none min-w-[140px]"
+          >
+            <option value="date">📅 Data</option>
+            <option value="odd-high">🔼 Maior Odd</option>
+            <option value="odd-low">🔽 Menor Odd</option>
+            <option value="risk-high">⚠️ Maior Risco</option>
+            <option value="risk-low">✅ Menor Risco</option>
           </select>
 
           {/* Refresh */}
