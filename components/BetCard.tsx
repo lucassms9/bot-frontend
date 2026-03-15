@@ -21,9 +21,21 @@ export default function BetCard({ bet, onMarkResult }: Props) {
   const [selectedResult, setSelectedResult] = useState<'won' | 'lost' | 'void' | null>(null);
   const [finalValue, setFinalValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const colorClass = riskColors[bet.summary.riskCategory] || 'bg-zinc-800 text-zinc-300 border-zinc-700';
   const isPending = bet.status === 'pending';
+
+  const handleCopyTeams = async () => {
+    const teamsText = `${bet.game1.team} ${bet.game2.team}`;
+    try {
+      await navigator.clipboard.writeText(teamsText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   const handleResultClick = (result: 'won' | 'lost' | 'void') => {
     setSelectedResult(result);
@@ -59,11 +71,28 @@ export default function BetCard({ bet, onMarkResult }: Props) {
       <div className="bg-zinc-900 rounded-lg shadow-md border border-zinc-800 p-4 hover:border-green-500/30 transition-colors">
         {/* Header */}
         <div className="flex justify-between items-center mb-4 pb-3 border-b border-zinc-800">
-          <div>
-            <div className="text-2xl font-bold text-green-400">
-              {bet.summary.oddTotal.toFixed(2)}
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="text-2xl font-bold text-green-400">
+                {bet.summary.oddTotal.toFixed(2)}
+              </div>
+              <div className="text-xs text-zinc-500">odd total</div>
             </div>
-            <div className="text-xs text-zinc-500">odd total</div>
+            <button
+              onClick={handleCopyTeams}
+              className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors group"
+              title="Copiar times"
+            >
+              {copied ? (
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              )}
+            </button>
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-emerald-500">
