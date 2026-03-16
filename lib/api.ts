@@ -107,6 +107,41 @@ export async function markBetResult(betId: string, data: MarkBetResultDto): Prom
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  
+
+  return handleResponse<any>(response);
+}
+
+export async function markBetInProgress(betId: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/bets/${betId}/start`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+  });
+
+  const data = await handleResponse<any>(response);
+  if (!data.success) {
+    throw new Error(data.error || 'Erro ao marcar aposta como em andamento');
+  }
+  return data;
+}
+
+export async function undoBet(betId: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/bets/${betId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  return handleResponse<any>(response);
+}
+
+export async function createBetFromOpportunities(
+  opportunity1Id: string,
+  opportunity2Id: string,
+): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/bets/create-from-opportunities`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ opportunity1Id, opportunity2Id }),
+  });
+
   return handleResponse<any>(response);
 }
