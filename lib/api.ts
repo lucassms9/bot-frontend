@@ -43,6 +43,7 @@ export async function getOpportunities(status?: string): Promise<OpportunitiesRe
   
   const response = await fetch(url, {
     cache: 'no-store',
+    headers: getAuthHeaders(),
   });
   
   return handleResponse<OpportunitiesResponse>(response);
@@ -75,6 +76,7 @@ export async function getTopOpportunities(limit = 10): Promise<OpportunitiesResp
     `${API_BASE_URL}/api/top-opportunities?limit=${limit}`,
     {
       cache: 'no-store',
+      headers: getAuthHeaders(),
     }
   );
   
