@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getBets, getStats, getBankroll, createOrUpdateBankroll, markBetResult, getOpportunities, undoBet, createBetFromOpportunities, markBetInProgress } from '@/lib/api';
 import { Bet, Stats, Bankroll, Opportunity } from '@/types';
 import BetCard from '@/components/BetCard';
@@ -14,6 +15,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 type Tab = 'bets' | 'in_progress' | 'opportunities';
 
 export default function BetsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('bets');
 
   const [bets, setBets] = useState<Bet[]>([]);
@@ -48,6 +50,10 @@ export default function BetsPage() {
       setOpportunities(oppsData.opportunities);
       if (bankrollData.success && bankrollData.bankroll) {
         setBankroll(bankrollData.bankroll);
+      } else {
+        // User has no bankroll yet — send to onboarding
+        router.replace('/onboarding');
+        return;
       }
     } catch (err) {
       setError('Erro ao carregar dados. Verifique se a API está rodando.');

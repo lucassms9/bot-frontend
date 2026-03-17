@@ -79,13 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await handleAuthResponse<SignupResponse>(res);
 
-      // Após signup bem-sucedido, fazer login automaticamente
+      // Após signup bem-sucedido, redirecionar para onboarding
       if (data.session?.access_token) {
         setToken(data.session.access_token);
         setUser(data.user);
         localStorage.setItem('token', data.session.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/');
+        router.push('/onboarding');
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro ao cadastrar';
