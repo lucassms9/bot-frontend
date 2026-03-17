@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getBets, getStats, getBankroll, createOrUpdateBankroll, markBetResult, getOpportunities, undoBet, createBetFromOpportunities, markBetInProgress } from '@/lib/api';
+import { getBets, getStats, getBankroll, createOrUpdateBankroll, resetBankroll, markBetResult, getOpportunities, undoBet, createBetFromOpportunities, markBetInProgress } from '@/lib/api';
 import { Bet, Stats, Bankroll, Opportunity } from '@/types';
 import BetCard from '@/components/BetCard';
 import StatsCard from '@/components/StatsCard';
@@ -70,6 +70,15 @@ export default function BetsPage() {
   const handleSaveBankroll = async (balance: number, currency: string, stakePercentage: number) => {
     try {
       await createOrUpdateBankroll({ initial_balance: balance, currency, stake_percentage: stakePercentage });
+      await fetchData();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleResetBankroll = async (balance: number, currency: string, stakePercentage: number) => {
+    try {
+      await resetBankroll({ new_balance: balance, currency, stake_percentage: stakePercentage });
       await fetchData();
     } catch (error) {
       throw error;
@@ -419,6 +428,8 @@ export default function BetsPage() {
           isOpen={showBankrollModal}
           onClose={() => setShowBankrollModal(false)}
           onSave={handleSaveBankroll}
+          onReset={handleResetBankroll}
+          hasExistingBankroll={!!bankroll}
           currentBalance={bankroll?.currentBalance || 0}
           currentCurrency={bankroll?.currency || 'BRL'}
           currentStakePercentage={bankroll?.stakePercentage || 10}

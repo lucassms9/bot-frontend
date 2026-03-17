@@ -101,6 +101,16 @@ export async function createOrUpdateBankroll(data: CreateBankrollDto): Promise<B
   return handleResponse<BankrollResponse>(response);
 }
 
+export async function resetBankroll(data: { new_balance: number; currency?: string; stake_percentage?: number }): Promise<BankrollResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/bankroll/reset`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  return handleResponse<BankrollResponse>(response);
+}
+
 export async function markBetResult(betId: string, data: MarkBetResultDto): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/api/bets/${betId}/result`, {
     method: 'PATCH',
