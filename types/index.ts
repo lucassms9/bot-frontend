@@ -89,6 +89,7 @@ export interface Stats {
   bets: {
     total: number;
     pending: number;
+    inProgress: number;
     won: number;
     lost: number;
     void: number;

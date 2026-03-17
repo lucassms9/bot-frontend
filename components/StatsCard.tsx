@@ -16,9 +16,9 @@ export default function StatsCard({ stats }: Props) {
         {/* Oportunidades */}
         <div className="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800">
           <div className="text-xs opacity-80 mb-1">Oportunidades</div>
-          <div className="text-2xl font-bold">{stats.opportunities.total}</div>
+          <div className="text-2xl font-bold">{stats.opportunities.pending}</div>
           <div className="text-xs mt-2">
-            {stats.opportunities.pending} disponíveis
+            {stats.opportunities.paired} em uso
           </div>
         </div>
 
@@ -27,7 +27,10 @@ export default function StatsCard({ stats }: Props) {
           <div className="text-xs text-zinc-400 mb-1">Duplas</div>
           <div className="text-2xl font-bold text-green-400">{stats.bets.total}</div>
           <div className="text-xs mt-2">
-            {stats.bets.pending} pendentes
+            {stats.bets.pending > 0 && <span>{stats.bets.pending} pendentes</span>}
+            {stats.bets.pending > 0 && stats.bets.inProgress > 0 && <span> · </span>}
+            {stats.bets.inProgress > 0 && <span className="text-orange-400">{stats.bets.inProgress} em andamento</span>}
+            {stats.bets.pending === 0 && stats.bets.inProgress === 0 && <span>todas resolvidas</span>}
           </div>
         </div>
 
